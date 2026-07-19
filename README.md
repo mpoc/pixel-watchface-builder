@@ -2,7 +2,10 @@
 
 Zoomed hour-hand watch face for Pixel Watch 2 (Watch Face Format XML, no code).
 
-![Example watch face](example.svg)
+<p align="center">
+  <img src="example.svg" alt="Example watch face" width="300">
+</p>
+
 ![Web UI example](web-ui-example.png)
 
 ## Iterate
