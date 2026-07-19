@@ -86,7 +86,7 @@ const range = (n: number) => Array.from({ length: n }, (_, i) => i);
 const HOUR_DEG = "([HOUR_0_11] + [MINUTE_SECOND] / 60.0) * 30.0";
 const MINUTE_DEG = "[MINUTE_SECOND] * 6.0";
 
-// fontFamily token -> res/font file stem. tools/build-fonts.py bakes one static
+// fontFamily token -> res/font file stem. tools/build-fonts.ts bakes one static
 // TTF per (token, weight) pair the presets use — see the comment there: a
 // variable font or a <font-family> XML makes WFF re-instance the typeface every
 // frame and the face crawls, so `weight` is baked into the file and never
@@ -106,7 +106,7 @@ const fontFile = (p: any) => {
   const name = `${stem}_${w}`;
   if (!FONT_FILES.has(name)) {
     throw new Error(
-      `missing res/font/${name}.ttf — run: python3 tools/build-fonts.py`,
+      `missing res/font/${name}.ttf — run: bun tools/build-fonts.ts`,
     );
   }
   return name;
@@ -122,6 +122,11 @@ const buildPreset = (name: string, p: any): XNode[] => {
   const ROTATE = p.mode === "rotate";
   const R = p.zoom;
   const DIST = p.focus * R;
+  // The camera looks along the hand plus cameraLead degrees (30 = a whole hour
+  // ahead). The hand itself keeps pointing at the true time, so a lead pushes it
+  // off toward the trailing edge of the view and puts the future under the center.
+  const LEAD = p.cameraLead ?? 0;
+  const CAM_DEG = LEAD ? `${HOUR_DEG} + ${LEAD.toFixed(1)}` : HOUR_DEG;
   // Cap at the farthest visible point (focus distance + screen half-diagonal).
   const HAND_LEN = Math.round(Math.min(p.handLength * R, DIST + 320));
   const BOX = 2 * Math.ceil(Math.max(R, HAND_LEN) + 60); // dial container, dial center at (CX, CX)
@@ -183,8 +188,9 @@ const buildPreset = (name: string, p: any): XNode[] => {
   // Off-screen culling. The scale repeats every 30 deg, so the dial can be drawn
   // as one hour's worth of ticks rotated by whole hours ([HOUR_0_11] * 30) —
   // segment k is pixel-identical to segment k+h. Inside that rotating frame the
-  // camera only ever sits between 0 and 30 deg (the hand's progress through the
-  // current hour), so most ticks can never be on screen and are not emitted.
+  // camera only ever sits between LEAD and LEAD + 30 deg (the hand's progress
+  // through the current hour, offset by the lead), so most ticks can never be on
+  // screen and are not emitted.
   //
   // canBeVisible answers, for a tick at relative angle `deg`, whether it is on
   // screen for ANY position of the camera within that 30 deg span. The camera
@@ -194,9 +200,10 @@ const buildPreset = (name: string, p: any): XNode[] => {
   // reach, so nothing is culled while any part of it still overlaps the window.
   const SCREEN_R = SCREEN / 2;
   const canBeVisible = (deg: number, w: number, h: number) => {
-    // deg - 30 < delta <= deg as the camera sweeps the hour; take the closest.
-    const rel = ((((deg + 180) % 360) + 360) % 360) - 180;
-    const delta = rel > 30 ? rel - 30 : rel < 0 ? -rel : 0;
+    // Angle from the middle of the camera's sweep; anything within half the
+    // sweep (15 deg) is reachable head-on, beyond that the closest edge counts.
+    const rel = ((((deg - LEAD - 15 + 180) % 360) + 360) % 360) - 180;
+    const delta = Math.max(0, Math.abs(rel) - 15);
     const rc = R - h / 2;
     const dist = Math.sqrt(
       rc * rc + DIST * DIST - 2 * rc * DIST * Math.cos((delta * Math.PI) / 180),
@@ -275,7 +282,7 @@ const buildPreset = (name: string, p: any): XNode[] => {
         pivotX={glued ? 0.5 : undefined}
         pivotY={glued ? 0.5 : undefined}
       >
-        {!glued && ROTATE && <Transform target="angle" value={HOUR_DEG} />}
+        {!glued && ROTATE && <Transform target="angle" value={CAM_DEG} />}
         <Text align="CENTER" ellipsis="false">
           <Font family={fontFile(p)} size={FONT_SIZE} color={DIAL_COLOR}>
             {h === 0 ? 12 : h}
@@ -318,7 +325,7 @@ const buildPreset = (name: string, p: any): XNode[] => {
         <Fill color={BG_COLOR} />
       </Rectangle>
     </PartDraw>,
-    // Camera: bring the focus point (at DIST along the hand) to screen center.
+    // Camera: bring the focus point (at DIST along the camera ray) to screen center.
     // Upright: translate the dial container against the hand angle.
     // Rotate: fix the dial DIST below center and counter-rotate it about its own
     // center by the hour angle, so the hand stays pinned pointing up.
@@ -332,16 +339,16 @@ const buildPreset = (name: string, p: any): XNode[] => {
       pivotY={ROTATE ? 0.5 : undefined}
     >
       {ROTATE ? (
-        <Transform target="angle" value={`360.0 - (${HOUR_DEG})`} />
+        <Transform target="angle" value={`360.0 - (${CAM_DEG})`} />
       ) : (
         <>
           <Transform
             target="x"
-            value={`${SCREEN / 2 - CX} - sin(rad(${HOUR_DEG})) * ${DIST}`}
+            value={`${SCREEN / 2 - CX} - sin(rad(${CAM_DEG})) * ${DIST}`}
           />
           <Transform
             target="y"
-            value={`${SCREEN / 2 - CX} + cos(rad(${HOUR_DEG})) * ${DIST}`}
+            value={`${SCREEN / 2 - CX} + cos(rad(${CAM_DEG})) * ${DIST}`}
           />
         </>
       )}

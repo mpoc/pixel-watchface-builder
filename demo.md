@@ -15,7 +15,7 @@ The camera follows the hour hand around the dial, so the relevant slice of the s
 Everything is built as a normal analog clock centered at the SVG midpoint with dial radius `R` (the zoom value).
 A camera group then transforms the whole scene.
 The visible "screen" is a 450x450 circle (Pixel Watch resolution), enforced with a clip path.
-The camera centers on the point `focus x R` from the dial center along the hour hand's current angle.
+The camera centers on the point `focus x R` from the dial center along the camera ray: the hour hand's current angle plus `cameraLead` degrees.
 This mirrors how the WFF version would work: static dial artwork plus time-driven rotations/translations, no dynamic drawing.
 
 ## Camera modes
@@ -51,6 +51,7 @@ Simulation-only controls (time, speed, live) are not part of the JSON.
 | Dial colour            | `dialColor`         | One hue for the whole scale system; markers/numerals full strength, notches at fixed descending opacities (half 0.9, quarter 0.7, five 0.5, minute 0.27)                                                                                                                     |
 | Background             | `background`        | Dial background fill                                                                                                                                                                                                                                                         |
 | Focus point            | `focus`             | Where along the hand the camera centers, as a fraction of `zoom` (0 = dial center, 1 = notch ring, >1 = past the hand end)                                                                                                                                                   |
+| Camera lead            | `cameraLead`        | Degrees the camera looks ahead of (positive) or behind (negative) the hand; 0.5 deg = 1 minute, 30 deg = a whole hour. The hand keeps pointing at the true time, so a lead slides it toward the trailing edge and puts the near future under screen center                    |
 | Date complication      | `complication`      | Screen-fixed round bubble (100px, the standard complication size), styled with the dial colour and font. Demo shows today's date; on the watch it is a real WFF complication slot (default day+date) the user can repoint to battery, steps, weather, etc. in the editor     |
 | Complication angle     | `complicationAngle` | Where the bubble sits, in degrees clockwise from 12 o'clock at a fixed safe radius (131px) from screen center: 0 = top, 90 = right, 180 = bottom. WFF cannot animate slot positions, so the bubble is always screen-fixed; in rotate mode 180 visually rides the hand's tail |
 
@@ -75,6 +76,8 @@ Every preset but Ink is on pure black: OLED black is unlit, so the face runs int
 - **Wide Angle**: zoom 300, focus 0.55, both hands, blue. Nearly a normal watch; useful as a comparison baseline.
 - **Vernier**: a caliper scale. Every-minute notches, hairline cyan hand, steel-white numerals outside the ring, condensed 400, all square-cut.
 - **Lume**: dive-watch green for hand and dial alike, chunky, geometric bold.
+- **Brutal**: poster-sized black-and-white slabs, square-cut, red hand.
+- **Horizon**: camera leads the hand by 12 deg (24 minutes), so now trails the edge and the next half hour sits under center. Mint hand, geometric 500.
 - **Ink**: the one light face — black ink on warm paper, serif, red hand.
 
 ## WFF portability notes

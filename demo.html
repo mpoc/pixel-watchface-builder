@@ -50,6 +50,7 @@
     <option value="lume">Lume</option>
     <option value="ink">Ink</option>
     <option value="brutal">Brutal</option>
+    <option value="horizon">Horizon</option>
   </select>
   <span class="val"></span>
 
@@ -171,6 +172,10 @@
   <input type="range" id="focus" min="0" max="1.5" step="0.01" value="0.81" data-cfg>
   <span class="val" id="focusVal"></span>
 
+  <label>Camera lead</label>
+  <input type="range" id="lead" min="-60" max="60" step="0.5" value="0" data-cfg>
+  <span class="val" id="leadVal"></span>
+
   <label>Live time</label>
   <input type="checkbox" id="live" checked>
   <span class="val"></span>
@@ -236,6 +241,7 @@ const cfg = () => ({
   handLength: +$('handlen').value,
   numeralsUpright: $('upnum').checked,
   focus: +$('focus').value,
+  cameraLead: +$('lead').value,
   minuteHand: $('minhand').checked,
   complication: $('comp').checked,
   complicationAngle: +$('compangle').value,
@@ -345,6 +351,9 @@ const render = () => {
   const s = simSeconds % 43200;
   const hourDeg = (s / 43200) * 360;
   const minDeg = ((s % 3600) / 3600) * 360;
+  // Where the camera looks: ahead of (or behind) the hand by cameraLead degrees.
+  // 30 deg = a whole hour ahead, so the hand trails off the near edge of the view.
+  const camDeg = hourDeg + (c.cameraLead || 0);
 
   const rot = (g, deg) => g.setAttribute('transform', `rotate(${deg} ${C} ${C})`);
   rot(parts.hourHand, hourDeg);
@@ -354,17 +363,18 @@ const render = () => {
   // Upright: counter-rotate numerals against their tick (and against the camera in
   // rotate mode). Otherwise leave them aligned with the dial ring.
   for (const { text, deg, ty } of parts.numerals) {
-    const a = c.numeralsUpright ? -deg + (c.mode === 'rotate' ? hourDeg : 0) : 0;
+    const a = c.numeralsUpright ? -deg + (c.mode === 'rotate' ? camDeg : 0) : 0;
     text.setAttribute('transform', `rotate(${a} ${C} ${ty})`);
   }
 
-  // Camera centers on the point at distance f·R from the dial center along the HOUR hand.
+  // Camera centers on the point at distance f·R from the dial center along the
+  // camera ray (the hour hand, plus cameraLead).
   const dist = c.focus * c.zoom;
-  const rad = hourDeg * Math.PI / 180;
+  const rad = camDeg * Math.PI / 180;
   if (c.mode === 'upright') {
     parts.cam.setAttribute('transform', `translate(${-Math.sin(rad) * dist} ${Math.cos(rad) * dist})`);
   } else {
-    parts.cam.setAttribute('transform', `translate(0 ${dist}) rotate(${-hourDeg} ${C} ${C})`);
+    parts.cam.setAttribute('transform', `translate(0 ${dist}) rotate(${-camDeg} ${C} ${C})`);
   }
 
   $('clock').textContent = fmt(s);
@@ -399,6 +409,7 @@ const updateLabels = () => {
   $('fscaleVal').textContent = (+$('fscale').value).toFixed(2);
   $('fweightVal').textContent = $('fweight').value;
   $('focusVal').textContent = (+$('focus').value).toFixed(2);
+  $('leadVal').textContent = `${(+$('lead').value).toFixed(1)}°`;
   $('compangleVal').textContent = `${$('compangle').value}°`;
   $('config').value = JSON.stringify(cfg(), null, 0).replaceAll(',"', ', "');
 };
@@ -426,6 +437,7 @@ const applyPreset = p => {
   $('handlen').value = p.handLength;
   $('upnum').checked = p.numeralsUpright;
   $('focus').value = p.focus;
+  $('lead').value = p.cameraLead;
   $('minhand').checked = p.minuteHand;
   $('comp').checked = p.complication;
   $('compangle').value = p.complicationAngle;
