@@ -2,6 +2,8 @@
 
 Zoomed hour-hand watch face for Pixel Watch 2 (Watch Face Format XML, no code).
 
+![Example watch face](example.svg)
+
 ## Iterate
 
 ```sh
