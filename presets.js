@@ -86,8 +86,8 @@ globalThis.WATCH_PRESETS = {
   },
   "drift": {
     "mode": "rotate", "notches": "5-30", "notchWeight": 2, "notchLength": 1.95,
-    "hourWeight": 1.3, "hourLength": 2, "numeralInset": 40, "numeralSide": "out", "sharp": true,
-    "fontWeight": 900, "fontScale": 1.4, "fontFamily": "mono",
+    "hourWeight": 1.3, "hourLength": 2, "numeralInset": 56, "numeralSide": "out", "sharp": true,
+    "fontWeight": 900, "fontScale": 1.6, "fontFamily": "mono",
     "zoom": 620, "thickness": 6, "handLength": 0, "numeralsUpright": false,
     "focus": 0.94, "cameraLead": 0, "minuteHand": false, "complication": false, "complicationAngle": 150,
     "handColor": "#ed557f", "dialColor": "#85beff", "background": "#000000"
