@@ -77,6 +77,7 @@ const PRESETS = JSON.parse(
 );
 
 const SCREEN = 450;
+const HUB_R = 8; // hand pivot cap at the dial center, matches the demo
 const wff = (c: string) => "#FF" + c.slice(1).toUpperCase(); // #rrggbb -> #AARRGGBB
 const round = (n: number) => Math.round(n);
 const ceil = (n: number) => Math.ceil(n);
@@ -360,6 +361,20 @@ const buildPreset = (name: string, p: any): XNode[] => {
       {HAND_LEN > 0 &&
         p.minuteHand &&
         hand("minhand", p.thickness, MINUTE_DEG, wff("#8892a0"))}
+      {/* Hub cap over the hand pivot at the dial center. Only emitted when the
+          dial center can actually be on screen: the camera sits DIST from it. */}
+      {HAND_LEN > 0 && DIST - HUB_R < SCREEN / 2 && (
+        <PartDraw
+          x={CX - HUB_R}
+          y={CX - HUB_R}
+          width={HUB_R * 2}
+          height={HUB_R * 2}
+        >
+          <Ellipse x={0} y={0} width={HUB_R * 2} height={HUB_R * 2}>
+            <Fill color={DIAL_COLOR} />
+          </Ellipse>
+        </PartDraw>
+      )}
     </Group>,
   ];
 };
