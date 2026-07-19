@@ -65,36 +65,34 @@ const range = (n: number) => Array.from({ length: n }, (_, i) => i);
 const HOUR_DEG = "([HOUR_0_11] + [MINUTE_SECOND] / 60.0) * 30.0";
 const MINUTE_DEG = "[MINUTE_SECOND] * 6.0";
 
-// fontFamily token -> res/font family XML (one bundled variable font each,
-// instanced at every weight so the WFF `weight` attribute resolves properly).
-// The demo maps the same tokens to the same typefaces via @font-face.
+// fontFamily token -> res/font file stem. tools/build-fonts.py bakes one static
+// TTF per (token, weight) pair the presets use — see the comment there: a
+// variable font or a <font-family> XML makes WFF re-instance the typeface every
+// frame and the face crawls, so `weight` is baked into the file and never
+// requested at runtime.
 const FONT_FAMILY: Record<string, string> = {
-  sans: "inter_family",
-  serif: "source_serif_family",
-  didone: "playfair_display_family",
-  mono: "jetbrains_mono_family",
-  condensed: "oswald_family",
-  geometric: "jost_family",
+  sans: "inter",
+  serif: "source_serif",
+  didone: "playfair_display",
+  mono: "jetbrains_mono",
+  condensed: "oswald",
+  geometric: "jost",
 };
-// WFF Font/@weight enum, keyed by the numeric weights presets use.
-const FONT_WEIGHT: Record<number, string> = {
-  100: "THIN",
-  200: "EXTRA_LIGHT",
-  300: "LIGHT",
-  400: "NORMAL",
-  500: "MEDIUM",
-  600: "SEMI_BOLD",
-  700: "BOLD",
-  800: "EXTRA_BOLD",
-  900: "BLACK",
+const fontFile = (p: any) => {
+  const stem = FONT_FAMILY[p.fontFamily];
+  if (!stem) throw new Error(`unknown fontFamily "${p.fontFamily}"`);
+  const w = Math.min(900, Math.max(100, Math.round(p.fontWeight / 100) * 100));
+  const name = `${stem}_${w}`;
+  if (!FONT_FILES.has(name)) {
+    throw new Error(`missing res/font/${name}.ttf — run: python3 tools/build-fonts.py`);
+  }
+  return name;
 };
-const fontFamily = (p: any) => {
-  const f = FONT_FAMILY[p.fontFamily];
-  if (!f) throw new Error(`unknown fontFamily "${p.fontFamily}"`);
-  return f;
-};
-const fontWeight = (p: any) =>
-  FONT_WEIGHT[Math.min(900, Math.max(100, Math.round(p.fontWeight / 100) * 100))];
+const FONT_FILES = new Set(
+  [...new Bun.Glob("*.ttf").scanSync("app/src/main/res/font")].map((f) =>
+    f.replace(/\.ttf$/, ""),
+  ),
+);
 
 // One preset's full scene content: background, then the camera group.
 const buildPreset = (name: string, p: any): XNode[] => {
@@ -189,9 +187,8 @@ const buildPreset = (name: string, p: any): XNode[] => {
         {!glued && ROTATE && <Transform target="angle" value={HOUR_DEG} />}
         <Text align="CENTER" ellipsis="false">
           <Font
-            family={fontFamily(p)}
+            family={fontFile(p)}
             size={FONT_SIZE}
-            weight={fontWeight(p)}
             color={DIAL_COLOR}
           >
             {h === 0 ? 12 : h}
@@ -292,9 +289,8 @@ const buildComplicationSlot = (name: string, p: any, slotId: number): XNode => {
     <PartText x={6} y={y} width={d - 12} height={h}>
       <Text align="CENTER" ellipsis="TRUE">
         <Font
-          family={fontFamily(p)}
+          family={fontFile(p)}
           size={fontSize}
-          weight={fontWeight(p)}
           color={DIAL_COLOR}
         >
           <Template>

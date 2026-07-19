@@ -4,15 +4,16 @@
 <meta charset="UTF-8">
 <title>Zoomed hour-hand watch face simulation</title>
 <style>
-  /* The same variable fonts the watch face bundles, so the preview matches the
-     device. Loading them needs demo.html served over http (Chrome blocks fonts
-     on file://) — otherwise the CSS fallbacks in FONT_STACK below stand in. */
-  @font-face { font-family: 'wf-sans';      src: url('app/src/main/res/font/inter.ttf');            font-weight: 100 900; }
-  @font-face { font-family: 'wf-serif';     src: url('app/src/main/res/font/source_serif.ttf');     font-weight: 200 900; }
-  @font-face { font-family: 'wf-didone';    src: url('app/src/main/res/font/playfair_display.ttf'); font-weight: 400 900; }
-  @font-face { font-family: 'wf-mono';      src: url('app/src/main/res/font/jetbrains_mono.ttf');   font-weight: 100 800; }
-  @font-face { font-family: 'wf-condensed'; src: url('app/src/main/res/font/oswald.ttf');           font-weight: 200 700; }
-  @font-face { font-family: 'wf-geometric'; src: url('app/src/main/res/font/jost.ttf');             font-weight: 100 900; }
+  /* The same typefaces the watch face bundles, so the preview matches the
+     device. These are the full variable fonts cached in .font-cache by
+     `bun tools/build-fonts.ts` (res/font/ holds only the single-weight cuts the
+     presets use). No cache or no http server -> the fallbacks in FONT_STACK. */
+  @font-face { font-family: 'wf-sans';      src: url('.font-cache/inter.ttf');            font-weight: 100 900; }
+  @font-face { font-family: 'wf-serif';     src: url('.font-cache/source_serif.ttf');     font-weight: 200 900; }
+  @font-face { font-family: 'wf-didone';    src: url('.font-cache/playfair_display.ttf'); font-weight: 400 900; }
+  @font-face { font-family: 'wf-mono';      src: url('.font-cache/jetbrains_mono.ttf');   font-weight: 100 800; }
+  @font-face { font-family: 'wf-condensed'; src: url('.font-cache/oswald.ttf');           font-weight: 200 700; }
+  @font-face { font-family: 'wf-geometric'; src: url('.font-cache/jost.ttf');             font-weight: 100 900; }
   body { background: #16181c; color: #ddd; font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: flex-start; gap: 40px; padding: 24px; flex-wrap: wrap; }
   .left { display: flex; flex-direction: column; align-items: center; gap: 18px; position: sticky; top: 24px; }
   .right { display: flex; flex-direction: column; gap: 14px; }
