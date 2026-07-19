@@ -73,7 +73,6 @@ Every preset but Ink is on pure black: OLED black is unlit, so the face runs int
 
 - **Classic**: the tuned default. Orange hand, 5-min notches with 30-min emphasis, zoom 870, focus 0.89.
 - **Rotor**: rotating camera, numerals glued to the dial, chunky weights, geometric 800, thick yellow hand ending at the ring, steel grey scale.
-- **Ember**: a coal in the dark. Red-orange hand, dim rose scale, serif at weight 200. The quiet one.
 - **Wide Angle**: zoom 300, focus 0.55, both hands, blue. Nearly a normal watch; useful as a comparison baseline.
 - **Vernier**: a caliper scale. Every-minute notches, hairline cyan hand, steel-white numerals outside the ring, condensed 400, all square-cut.
 - **Lume**: dive-watch green for hand and dial alike, chunky, geometric bold.

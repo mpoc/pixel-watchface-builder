@@ -12,7 +12,6 @@
 //
 // classic    the tuned default
 // rotor      rotating camera, numerals glued to dial, chunky, geometric
-// ember      a coal in the dark: dim rose scale, hot red-orange hand, serif 200
 // wide       pulled back, both hands, close to a normal watch
 // vernier    caliper scale: steel numerals outside the ring, hairline cyan hand
 // lume       dive-watch green everything on black
@@ -36,14 +35,6 @@ globalThis.WATCH_PRESETS = {
     "zoom": 700, "thickness": 6, "handLength": 1.05, "numeralsUpright": false,
     "focus": 0.7, "cameraLead": 0, "minuteHand": false, "complication": false, "complicationAngle": 180,
     "handColor": "#ffd23f", "dialColor": "#9aa0a6", "background": "#000000"
-  },
-  "ember": {
-    "mode": "upright", "notches": "10-30", "notchWeight": 0.6, "notchLength": 0.5,
-    "hourWeight": 0.7, "hourLength": 1, "numeralInset": 105, "numeralSide": "in", "sharp": false,
-    "fontWeight": 200, "fontScale": 1.2, "fontFamily": "serif",
-    "zoom": 800, "thickness": 2, "handLength": 1, "numeralsUpright": true,
-    "focus": 0.85, "cameraLead": 0, "minuteHand": false, "complication": false, "complicationAngle": 180,
-    "handColor": "#ff4d2e", "dialColor": "#a86450", "background": "#000000"
   },
   "wide": {
     "mode": "upright", "notches": "5", "notchWeight": 1, "notchLength": 1,
