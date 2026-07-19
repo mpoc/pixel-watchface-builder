@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <title>Zoomed hour-hand watch face simulation</title>
 <style>
+  /* The same variable fonts the watch face bundles, so the preview matches the
+     device. Loading them needs demo.html served over http (Chrome blocks fonts
+     on file://) — otherwise the CSS fallbacks in FONT_STACK below stand in. */
+  @font-face { font-family: 'wf-sans';      src: url('app/src/main/res/font/inter.ttf');            font-weight: 100 900; }
+  @font-face { font-family: 'wf-serif';     src: url('app/src/main/res/font/source_serif.ttf');     font-weight: 200 900; }
+  @font-face { font-family: 'wf-didone';    src: url('app/src/main/res/font/playfair_display.ttf'); font-weight: 400 900; }
+  @font-face { font-family: 'wf-mono';      src: url('app/src/main/res/font/jetbrains_mono.ttf');   font-weight: 100 800; }
+  @font-face { font-family: 'wf-condensed'; src: url('app/src/main/res/font/oswald.ttf');           font-weight: 200 700; }
+  @font-face { font-family: 'wf-geometric'; src: url('app/src/main/res/font/jost.ttf');             font-weight: 100 900; }
   body { background: #16181c; color: #ddd; font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: flex-start; gap: 40px; padding: 24px; flex-wrap: wrap; }
   .left { display: flex; flex-direction: column; align-items: center; gap: 18px; position: sticky; top: 24px; }
   .right { display: flex; flex-direction: column; gap: 14px; }
@@ -116,17 +125,17 @@
 
   <label>Font</label>
   <select id="ffamily" data-cfg>
-    <option value="system-ui" selected>Sans (system)</option>
-    <option value="Georgia, serif">Serif</option>
-    <option value="Didot, 'Bodoni MT', serif">Didone</option>
-    <option value="ui-monospace, Menlo, monospace">Mono</option>
-    <option value="'Avenir Next Condensed', 'Arial Narrow', sans-serif">Condensed</option>
-    <option value="Futura, 'Century Gothic', sans-serif">Geometric</option>
+    <option value="sans" selected>Sans (Inter)</option>
+    <option value="serif">Serif (Source Serif)</option>
+    <option value="didone">Didone (Playfair)</option>
+    <option value="mono">Mono (JetBrains Mono)</option>
+    <option value="condensed">Condensed (Oswald)</option>
+    <option value="geometric">Geometric (Jost)</option>
   </select>
   <span class="val"></span>
 
   <label>Font weight</label>
-  <input type="range" id="fweight" min="200" max="800" step="50" value="600" data-cfg>
+  <input type="range" id="fweight" min="100" max="900" step="100" value="600" data-cfg>
   <span class="val" id="fweightVal"></span>
 
   <label>Font size</label>
@@ -194,6 +203,17 @@ const el = (name, attrs, parent) => {
   return e;
 };
 
+// fontFamily token -> CSS stack. The bundled font first (see @font-face above),
+// then a lookalike fallback for when the file can't be loaded.
+const FONT_STACK = {
+  sans: "'wf-sans', system-ui, sans-serif",
+  serif: "'wf-serif', Georgia, serif",
+  didone: "'wf-didone', Didot, 'Bodoni MT', serif",
+  mono: "'wf-mono', ui-monospace, Menlo, monospace",
+  condensed: "'wf-condensed', 'Avenir Next Condensed', 'Arial Narrow', sans-serif",
+  geometric: "'wf-geometric', Futura, 'Century Gothic', sans-serif",
+};
+
 const cfg = () => ({
   mode: $('mode').value,
   notches: $('notches').value,
@@ -244,7 +264,7 @@ const build = c => {
     const ty = C - R + (c.numeralSide === 'out' ? -c.numeralInset : c.numeralInset);
     const text = el('text', {
       x: C, y: ty, fill: c.dialColor, 'text-anchor': 'middle', 'dominant-baseline': 'middle',
-      'font-size': c.fontScale * Math.min(56, 26 + (R - 200) / 60), 'font-family': c.fontFamily, 'font-weight': c.fontWeight,
+      'font-size': c.fontScale * Math.min(56, 26 + (R - 200) / 60), 'font-family': FONT_STACK[c.fontFamily], 'font-weight': c.fontWeight,
     }, g);
     text.textContent = h === 0 ? 12 : h;
     numerals.push({ text, deg, ty });
@@ -294,7 +314,7 @@ const build = c => {
     const txt = (y, size, content) => {
       const t = el('text', {
         x: ccx, y, fill: c.dialColor, 'text-anchor': 'middle', 'dominant-baseline': 'central',
-        'font-size': size, 'font-family': c.fontFamily, 'font-weight': c.fontWeight,
+        'font-size': size, 'font-family': FONT_STACK[c.fontFamily], 'font-weight': c.fontWeight,
       }, g);
       t.textContent = content;
     };

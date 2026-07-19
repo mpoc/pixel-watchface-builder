@@ -44,8 +44,8 @@ Simulation-only controls (time, speed, live) are not part of the JSON.
 | Sharp ends             | `sharp`             | Square-cut ends on notches, markers, and hands instead of rounded                                                                                                                                                                                                            |
 | Numeral inset          | `numeralInset`      | Distance in px from the notch ring to the numeral center                                                                                                                                                                                                                     |
 | Numerals upright       | `numeralsUpright`   | On: numerals always read upright (counter-rotated per tick, and against the camera in rotate mode). Off: numerals stay glued to the ring orientation                                                                                                                         |
-| Font                   | `fontFamily`        | CSS stack: sans, serif (Georgia), Didone (Didot), mono, condensed, geometric (Futura)                                                                                                                                                                                        |
-| Font weight            | `fontWeight`        | 200-800                                                                                                                                                                                                                                                                      |
+| Font                   | `fontFamily`        | One of `sans` (Inter), `serif` (Source Serif), `didone` (Playfair Display), `mono` (JetBrains Mono), `condensed` (Oswald), `geometric` (Jost). The same six variable fonts are bundled in `app/src/main/res/font/` and used by both the demo and the watch face                                                                                                                                                                                        |
+| Font weight            | `fontWeight`        | 100-900 in steps of 100, mapping onto WFF's weight enum                                                                                                                                                                                                                                                                      |
 | Font size              | `fontScale`         | Multiplier on the auto size (which grows with zoom, capped at 56px)                                                                                                                                                                                                          |
 | Hand colour            | `handColor`         | Hour hand fill                                                                                                                                                                                                                                                               |
 | Dial colour            | `dialColor`         | One hue for the whole scale system; markers/numerals full strength, notches at fixed descending opacities (half 0.9, quarter 0.7, five 0.5, minute 0.27)                                                                                                                     |
@@ -68,17 +68,17 @@ Presets are config bundles only; picking one sets every control, after which any
 No saving is implemented.
 
 - **Classic**: the tuned default. Orange hand, 10-min notches with 30-min emphasis, zoom 550, focus 0.81.
-- **Rotor**: rotating camera, numerals glued to the dial, chunky weights, Futura 800, thick yellow hand ending at the ring.
-- **Ember**: warm near-black background, red-orange hand, rose dial tint, Georgia at weight 200. The quiet one.
+- **Rotor**: rotating camera, numerals glued to the dial, chunky weights, geometric 800, thick yellow hand ending at the ring.
+- **Ember**: warm near-black background, red-orange hand, rose dial tint, serif at weight 200. The quiet one.
 - **Wide Angle**: zoom 300, focus 0.55, both hands, blue. Nearly a normal watch; useful as a comparison baseline.
 - **Blueprint**: sharp square ends, numerals outside the ring, condensed font, cyan on ink blue.
-- **Lume**: dive-watch green for hand and dial alike on near-black, chunky, Futura bold.
+- **Lume**: dive-watch green for hand and dial alike on near-black, chunky, geometric bold.
 
 ## WFF portability notes
 
 The sim deliberately only uses primitives that map to Watch Face Format:
 
-- Static dial artwork (ticks, numerals) pre-rotated around a fixed center. Numerals would ship as PNGs, so any font works.
+- Static dial artwork (ticks, numerals) pre-rotated around a fixed center. Numerals are real WFF text: the six fonts are bundled as subset variable TTFs in `res/font/`, each with a `<font-family>` XML that instances the `wght` axis per weight, so `fontFamily`/`fontWeight` carry over from the demo exactly.
 - Time-driven rotation of the hand and (in rotate mode) the dial group. Directly expressible.
 - The upright camera's translation is `focus x zoom x sin/cos(hourAngle)`. WFF transform expressions support trig, so this should be expressible in XML, but it is the least-verified piece.
 - Upright numerals in rotate mode need one time-driven counter-rotation per numeral (12 extra animated transforms). Verbose but expressible.
