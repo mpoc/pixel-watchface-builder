@@ -10,7 +10,6 @@
 // blueprint  sharp square ends, numerals outside, cyan on ink blue
 // lume       dive-watch green everything on near-black
 // ink        inverted: black ink on warm paper, the only light face
-// abyss      no numerals at all — pure scale, faint deep-sea blue, hairline hand
 // brutal     poster-sized black-and-white slabs, sharp cuts, red hand
 globalThis.WATCH_PRESETS = {
   "classic": {
@@ -68,14 +67,6 @@ globalThis.WATCH_PRESETS = {
     "zoom": 800, "thickness": 2, "handLength": 4, "numeralsUpright": true,
     "focus": 0.87, "minuteHand": false, "complication": true, "complicationAngle": 180,
     "handColor": "#b3261e", "dialColor": "#1c1a17", "background": "#f0e7d3"
-  },
-  "abyss": {
-    "mode": "upright", "notches": "30", "notchWeight": 0.8, "notchLength": 2,
-    "hourWeight": 0.8, "hourLength": 2.2, "numeralInset": 600, "numeralSide": "in", "sharp": false,
-    "fontWeight": 200, "fontScale": 1, "fontFamily": "system-ui",
-    "zoom": 1400, "thickness": 1, "handLength": 4, "numeralsUpright": true,
-    "focus": 0.9, "minuteHand": false, "complication": false, "complicationAngle": 180,
-    "handColor": "#dff3ff", "dialColor": "#3d6d8a", "background": "#010409"
   },
   "brutal": {
     "mode": "upright", "notches": "5", "notchWeight": 3, "notchLength": 1.5,
