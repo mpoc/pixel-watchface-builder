@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Zoomed hour-hand watch face simulation</title>
+<style>
+  body { background: #16181c; color: #ddd; font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: flex-start; gap: 40px; padding: 24px; flex-wrap: wrap; }
+  .left { display: flex; flex-direction: column; align-items: center; gap: 18px; position: sticky; top: 24px; }
+  .right { display: flex; flex-direction: column; gap: 14px; }
+  .watch { border-radius: 50%; box-shadow: 0 0 0 10px #2a2d33, 0 0 40px rgba(0,0,0,.6); }
+  .controls { display: grid; grid-template-columns: 160px 1fr 90px; gap: 8px 12px; align-items: center; width: 580px; max-width: 95vw; }
+  input[type=range] { width: 100%; }
+  select { background: #22252b; color: #ddd; border: 1px solid #444; border-radius: 4px; padding: 4px; }
+  label { font-size: 13px; color: #9aa; }
+  .val { font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; }
+  #clock { font-size: 22px; font-variant-numeric: tabular-nums; }
+  .hint { font-size: 12px; color: #778; max-width: 580px; text-align: center; }
+  .cfg { width: 580px; max-width: 95vw; display: flex; gap: 8px; align-items: flex-start; }
+  #config { flex: 1; background: #0e0f12; color: #9fd49f; border: 1px solid #333; border-radius: 6px; font: 12px ui-monospace, monospace; padding: 8px; resize: none; }
+  button { background: #2a2d33; color: #ddd; border: 1px solid #444; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+  button:hover { background: #3a3e46; }
+</style>
+</head>
+<body>
+
+<div class="left">
+  <svg id="svg" class="watch" width="450" height="450" viewBox="0 0 450 450"></svg>
+  <div id="clock"></div>
+</div>
+
+<div class="right">
+<div class="controls">
+  <label>Preset</label>
+  <select id="preset">
+    <option value="classic" selected>Classic</option>
+    <option value="rotor">Rotor</option>
+    <option value="ember">Ember</option>
+    <option value="wide">Wide Angle</option>
+    <option value="blueprint">Blueprint</option>
+    <option value="lume">Lume</option>
+    <option value="ink">Ink</option>
+    <option value="abyss">Abyss</option>
+    <option value="brutal">Brutal</option>
+  </select>
+  <span class="val"></span>
+
+  <label>Camera</label>
+  <select id="mode" data-cfg>
+    <option value="upright" selected>Follow hour hand, camera upright</option>
+    <option value="rotate">Follow hour hand, camera rotates</option>
+  </select>
+  <span class="val"></span>
+
+  <label>Minute notches</label>
+  <select id="notches" data-cfg>
+    <option value="1">Every minute (5-min emphasized)</option>
+    <option value="1-30">Every minute (5-min + extra 30-min emphasis)</option>
+    <option value="10-30" selected>Every 10 min (30 emphasized)</option>
+    <option value="5-30">Every 5 min (30 emphasized)</option>
+    <option value="5">Every 5 minutes</option>
+    <option value="15">Quarter hours</option>
+    <option value="30">Half hour</option>
+    <option value="0">None</option>
+  </select>
+  <span class="val"></span>
+
+  <label>Time</label>
+  <input type="range" id="time" min="0" max="43199" step="1" value="0">
+  <span class="val" id="timeVal"></span>
+
+  <label>Speed</label>
+  <input type="range" id="speed" min="0" max="3600" step="1" value="600">
+  <span class="val" id="speedVal"></span>
+
+  <label>Zoom (dial radius)</label>
+  <input type="range" id="zoom" min="200" max="8000" step="10" value="550" data-cfg>
+  <span class="val" id="zoomVal"></span>
+
+  <label>Hand thickness</label>
+  <input type="range" id="thick" min="1" max="24" step="0.5" value="1" data-cfg>
+  <span class="val" id="thickVal"></span>
+
+  <label>Hand length (× radius)</label>
+  <input type="range" id="handlen" min="0.3" max="4" step="0.01" value="4" data-cfg>
+  <span class="val" id="handlenVal"></span>
+
+  <label>Notch weight</label>
+  <input type="range" id="nweight" min="0.5" max="2" step="0.05" value="0.85" data-cfg>
+  <span class="val" id="nweightVal"></span>
+
+  <label>Notch length</label>
+  <input type="range" id="nlength" min="0.4" max="2.5" step="0.05" value="0.6" data-cfg>
+  <span class="val" id="nlengthVal"></span>
+
+  <label>Hour marker weight</label>
+  <input type="range" id="hweight" min="0.5" max="2" step="0.05" value="1" data-cfg>
+  <span class="val" id="hweightVal"></span>
+
+  <label>Hour marker length</label>
+  <input type="range" id="hlength" min="0.4" max="2.5" step="0.05" value="1" data-cfg>
+  <span class="val" id="hlengthVal"></span>
+
+  <label>Numeral side</label>
+  <select id="numside" data-cfg>
+    <option value="in" selected>Inside the ring</option>
+    <option value="out">Outside the ring</option>
+  </select>
+  <span class="val"></span>
+
+  <label>Sharp ends</label>
+  <input type="checkbox" id="sharp" data-cfg>
+  <span class="val"></span>
+
+  <label>Numeral inset</label>
+  <input type="range" id="numdist" min="40" max="220" step="2" value="88" data-cfg>
+  <span class="val" id="numdistVal"></span>
+
+  <label>Font</label>
+  <select id="ffamily" data-cfg>
+    <option value="system-ui" selected>Sans (system)</option>
+    <option value="Georgia, serif">Serif</option>
+    <option value="Didot, 'Bodoni MT', serif">Didone</option>
+    <option value="ui-monospace, Menlo, monospace">Mono</option>
+    <option value="'Avenir Next Condensed', 'Arial Narrow', sans-serif">Condensed</option>
+    <option value="Futura, 'Century Gothic', sans-serif">Geometric</option>
+  </select>
+  <span class="val"></span>
+
+  <label>Font weight</label>
+  <input type="range" id="fweight" min="200" max="800" step="50" value="600" data-cfg>
+  <span class="val" id="fweightVal"></span>
+
+  <label>Font size</label>
+  <input type="range" id="fscale" min="0.5" max="2" step="0.05" value="1" data-cfg>
+  <span class="val" id="fscaleVal"></span>
+
+  <label>Hand colour</label>
+  <input type="color" id="handcolor" value="#ff9d47" data-cfg>
+  <span class="val"></span>
+
+  <label>Dial colour</label>
+  <input type="color" id="dialcolor" value="#e8e8e8" data-cfg>
+  <span class="val"></span>
+
+  <label>Background</label>
+  <input type="color" id="bgcolor" value="#0b0c0f" data-cfg>
+  <span class="val"></span>
+
+  <label>Numerals upright</label>
+  <input type="checkbox" id="upnum" checked data-cfg>
+  <span class="val"></span>
+
+  <label>Date complication</label>
+  <input type="checkbox" id="comp" data-cfg>
+  <span class="val"></span>
+
+  <label>Complication angle</label>
+  <input type="range" id="compangle" min="0" max="345" step="15" value="180" data-cfg>
+  <span class="val" id="compangleVal"></span>
+
+  <label>Focus point</label>
+  <input type="range" id="focus" min="0" max="1.5" step="0.01" value="0.81" data-cfg>
+  <span class="val" id="focusVal"></span>
+
+  <label>Live time</label>
+  <input type="checkbox" id="live" checked>
+  <span class="val"></span>
+
+  <label>Show minute hand</label>
+  <input type="checkbox" id="minhand" data-cfg>
+  <span class="val"></span>
+</div>
+
+<div class="cfg">
+  <textarea id="config" rows="4" readonly></textarea>
+  <button id="copy">Copy</button>
+</div>
+
+</div>
+
+<script src="presets.js"></script>
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+const W = 450, C = W / 2;
+
+const $ = id => document.getElementById(id);
+const svg = $('svg');
+
+let simSeconds = (() => { const d = new Date(); return (d.getHours() % 12) * 3600 + d.getMinutes() * 60 + d.getSeconds(); })();
+
+const el = (name, attrs, parent) => {
+  const e = document.createElementNS(NS, name);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  parent.appendChild(e);
+  return e;
+};
+
+const cfg = () => ({
+  mode: $('mode').value,
+  notches: $('notches').value,
+  notchWeight: +$('nweight').value,
+  notchLength: +$('nlength').value,
+  hourWeight: +$('hweight').value,
+  hourLength: +$('hlength').value,
+  numeralInset: +$('numdist').value,
+  numeralSide: $('numside').value,
+  sharp: $('sharp').checked,
+  fontScale: +$('fscale').value,
+  fontFamily: $('ffamily').value,
+  handColor: $('handcolor').value,
+  dialColor: $('dialcolor').value,
+  background: $('bgcolor').value,
+  fontWeight: +$('fweight').value,
+  zoom: +$('zoom').value,
+  thickness: +$('thick').value,
+  handLength: +$('handlen').value,
+  numeralsUpright: $('upnum').checked,
+  focus: +$('focus').value,
+  minuteHand: $('minhand').checked,
+  complication: $('comp').checked,
+  complicationAngle: +$('compangle').value,
+});
+
+// A normal analog clock centered at (C, C) with dial radius R, but the dial is
+// subdivided in MINUTES of hour-hand travel: 0.5° per minute.
+const build = c => {
+  const R = c.zoom;
+  svg.innerHTML = '';
+  const defs = el('defs', {}, svg);
+  const clip = el('clipPath', { id: 'screen' }, defs);
+  el('circle', { cx: C, cy: C, r: C, fill: 'none' }, clip);
+  const root = el('g', { 'clip-path': 'url(#screen)' }, svg);
+  el('rect', { x: -30000, y: -30000, width: 60000, height: 60000, fill: c.background }, root);
+
+  const cam = el('g', {}, root);
+  const dial = el('g', {}, cam);
+  const numerals = [];
+
+  // Hour markers + upright numerals.
+  for (let h = 0; h < 12; h++) {
+    const deg = h * 30;
+    const g = el('g', { transform: `rotate(${deg} ${C} ${C})` }, dial);
+    const hw = c.hourWeight * 6;
+    el('rect', { x: C - hw / 2, y: C - R, width: hw, height: c.hourLength * 44, fill: c.dialColor, rx: c.sharp ? 0 : hw / 2 }, g);
+    const ty = C - R + (c.numeralSide === 'out' ? -c.numeralInset : c.numeralInset);
+    const text = el('text', {
+      x: C, y: ty, fill: c.dialColor, 'text-anchor': 'middle', 'dominant-baseline': 'middle',
+      'font-size': c.fontScale * Math.min(56, 26 + (R - 200) / 60), 'font-family': c.fontFamily, 'font-weight': c.fontWeight,
+    }, g);
+    text.textContent = h === 0 ? 12 : h;
+    numerals.push({ text, deg, ty });
+  }
+
+  // Minute notches: each minute of hour-hand travel is 0.5 degrees.
+  const [stepStr, emphasis] = String(c.notches).split('-');
+  const step = +stepStr;
+  const halfEmph = emphasis === '30';
+  if (step > 0) {
+    for (let h = 0; h < 12; h++) {
+      for (let m = step; m < 60; m += step) {
+        const deg = h * 30 + m * 0.5;
+        const five = m % 5 === 0, fifteen = m % 15 === 0, half = halfEmph && m === 30;
+        const g = el('g', { transform: `rotate(${deg} ${C} ${C})` }, dial);
+        const w = c.notchWeight * (half ? 3.5 : fifteen ? 2.5 : 1.5);
+        el('rect', {
+          x: C - w / 2, y: C - R,
+          width: w,
+          height: c.notchLength * (half ? 38 : fifteen ? 30 : five ? 22 : 12),
+          fill: c.dialColor, opacity: half ? 0.9 : fifteen ? 0.7 : five ? 0.5 : 0.27, rx: c.sharp ? 0 : w / 2,
+        }, g);
+      }
+    }
+  }
+
+  const hand = (len, w2, color) => {
+    const g = el('g', {}, cam);
+    el('rect', { x: C - w2, y: C - len, width: w2 * 2, height: len + 8, fill: color, rx: c.sharp ? 0 : w2 }, g);
+    return g;
+  };
+  const len = c.handLength * R;
+  const hourHand = hand(len, c.thickness, c.handColor);
+  const minHand  = hand(len, c.thickness / 2, '#8892a0');
+
+  el('circle', { cx: C, cy: C, r: 8, fill: c.dialColor }, cam);
+
+  // Screen-fixed round date bubble at bottom center (a complication slot on the watch).
+  if (c.complication) {
+    const g = el('g', {}, root);
+    const aRad = (c.complicationAngle * Math.PI) / 180;
+    const ccx = C + Math.sin(aRad) * 131, ccy = C - Math.cos(aRad) * 131;
+    el('circle', {
+      cx: ccx, cy: ccy, r: 49,
+      fill: 'none', stroke: c.dialColor, 'stroke-opacity': 0.35, 'stroke-width': 1.5,
+    }, g);
+    const txt = (y, size, content) => {
+      const t = el('text', {
+        x: ccx, y, fill: c.dialColor, 'text-anchor': 'middle', 'dominant-baseline': 'central',
+        'font-size': size, 'font-family': c.fontFamily, 'font-weight': c.fontWeight,
+      }, g);
+      t.textContent = content;
+    };
+    // Provider icon stand-in (a little calendar): on the watch this is the
+    // provider's real monochromatic icon, tinted with the dial colour.
+    const iy = ccy - 29;
+    el('rect', { x: ccx - 8, y: iy - 6, width: 16, height: 13, rx: 2, fill: 'none', stroke: c.dialColor, 'stroke-width': 1.5 }, g);
+    el('line', { x1: ccx - 4, y1: iy - 9, x2: ccx - 4, y2: iy - 4, stroke: c.dialColor, 'stroke-width': 1.5 }, g);
+    el('line', { x1: ccx + 4, y1: iy - 9, x2: ccx + 4, y2: iy - 4, stroke: c.dialColor, 'stroke-width': 1.5 }, g);
+    const d = new Date();
+    txt(ccy - 6, 13 * c.fontScale, d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase());
+    txt(ccy + 16, 20 * c.fontScale, d.getDate());
+  }
+
+  return { cam, numerals, hourHand, minHand };
+};
+
+let parts = build(cfg());
+
+const fmt = s => {
+  const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, sec = Math.floor(s) % 60;
+  return `${String(h === 0 ? 12 : h).padStart(2, ' ')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+};
+
+const render = () => {
+  const c = cfg();
+  const s = simSeconds % 43200;
+  const hourDeg = (s / 43200) * 360;
+  const minDeg = ((s % 3600) / 3600) * 360;
+
+  const rot = (g, deg) => g.setAttribute('transform', `rotate(${deg} ${C} ${C})`);
+  rot(parts.hourHand, hourDeg);
+  parts.minHand.style.display = c.minuteHand ? '' : 'none';
+  rot(parts.minHand, minDeg);
+
+  // Upright: counter-rotate numerals against their tick (and against the camera in
+  // rotate mode). Otherwise leave them aligned with the dial ring.
+  for (const { text, deg, ty } of parts.numerals) {
+    const a = c.numeralsUpright ? -deg + (c.mode === 'rotate' ? hourDeg : 0) : 0;
+    text.setAttribute('transform', `rotate(${a} ${C} ${ty})`);
+  }
+
+  // Camera centers on the point at distance f·R from the dial center along the HOUR hand.
+  const dist = c.focus * c.zoom;
+  const rad = hourDeg * Math.PI / 180;
+  if (c.mode === 'upright') {
+    parts.cam.setAttribute('transform', `translate(${-Math.sin(rad) * dist} ${Math.cos(rad) * dist})`);
+  } else {
+    parts.cam.setAttribute('transform', `translate(0 ${dist}) rotate(${-hourDeg} ${C} ${C})`);
+  }
+
+  $('clock').textContent = fmt(s);
+  $('timeVal').textContent = fmt(s);
+  $('time').value = Math.floor(s);
+};
+
+let last = performance.now();
+const tick = now => {
+  const dt = (now - last) / 1000;
+  last = now;
+  if ($('live').checked) {
+    const d = new Date();
+    simSeconds = (d.getHours() % 12) * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000;
+  } else {
+    simSeconds = (simSeconds + dt * +$('speed').value) % 43200;
+  }
+  render();
+  requestAnimationFrame(tick);
+};
+
+const updateLabels = () => {
+  $('speedVal').textContent = `${$('speed').value}×`;
+  $('zoomVal').textContent = `${$('zoom').value}px`;
+  $('thickVal').textContent = `${$('thick').value}px`;
+  $('handlenVal').textContent = (+$('handlen').value).toFixed(2);
+  $('nweightVal').textContent = (+$('nweight').value).toFixed(2);
+  $('nlengthVal').textContent = (+$('nlength').value).toFixed(2);
+  $('hweightVal').textContent = (+$('hweight').value).toFixed(2);
+  $('hlengthVal').textContent = (+$('hlength').value).toFixed(2);
+  $('numdistVal').textContent = `${$('numdist').value}px`;
+  $('fscaleVal').textContent = (+$('fscale').value).toFixed(2);
+  $('fweightVal').textContent = $('fweight').value;
+  $('focusVal').textContent = (+$('focus').value).toFixed(2);
+  $('compangleVal').textContent = `${$('compangle').value}°`;
+  $('config').value = JSON.stringify(cfg(), null, 0).replaceAll(',"', ', "');
+};
+
+const rebuild = () => { parts = build(cfg()); };
+
+// Presets live in presets.js — the same file tools/generate-watchface.ts reads.
+const PRESETS = globalThis.WATCH_PRESETS;
+
+const applyPreset = p => {
+  $('mode').value = p.mode;
+  $('notches').value = p.notches;
+  $('nweight').value = p.notchWeight;
+  $('nlength').value = p.notchLength;
+  $('hweight').value = p.hourWeight;
+  $('hlength').value = p.hourLength;
+  $('numdist').value = p.numeralInset;
+  $('numside').value = p.numeralSide;
+  $('sharp').checked = p.sharp;
+  $('fweight').value = p.fontWeight;
+  $('fscale').value = p.fontScale;
+  $('ffamily').value = p.fontFamily;
+  $('zoom').value = p.zoom;
+  $('thick').value = p.thickness;
+  $('handlen').value = p.handLength;
+  $('upnum').checked = p.numeralsUpright;
+  $('focus').value = p.focus;
+  $('minhand').checked = p.minuteHand;
+  $('comp').checked = p.complication;
+  $('compangle').value = p.complicationAngle;
+  $('handcolor').value = p.handColor;
+  $('dialcolor').value = p.dialColor;
+  $('bgcolor').value = p.background;
+  rebuild();
+  updateLabels();
+};
+$('preset').addEventListener('input', () => applyPreset(PRESETS[$('preset').value]));
+
+for (const input of document.querySelectorAll('[data-cfg]')) {
+  input.addEventListener('input', () => { rebuild(); updateLabels(); });
+}
+$('time').addEventListener('input', e => { simSeconds = +e.target.value; $('live').checked = false; });
+$('speed').addEventListener('input', () => { $('live').checked = false; updateLabels(); });
+$('copy').addEventListener('click', () => navigator.clipboard.writeText($('config').value));
+
+applyPreset(PRESETS[$('preset').value]);
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
