@@ -1,0 +1,8 @@
+{
+  "name": "pixel-watchface-builder",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^7.0.2"
+  }
+}
