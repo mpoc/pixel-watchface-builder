@@ -100,7 +100,7 @@
   <span class="val" id="nweightVal"></span>
 
   <label>Notch length</label>
-  <input type="range" id="nlength" min="0.4" max="2.5" step="0.05" value="0.6" data-cfg>
+  <input type="range" id="nlength" min="0.4" max="6" step="0.05" value="0.6" data-cfg>
   <span class="val" id="nlengthVal"></span>
 
   <label>Hour marker weight</label>
@@ -108,7 +108,7 @@
   <span class="val" id="hweightVal"></span>
 
   <label>Hour marker length</label>
-  <input type="range" id="hlength" min="0.4" max="2.5" step="0.05" value="1" data-cfg>
+  <input type="range" id="hlength" min="0.4" max="6" step="0.05" value="1" data-cfg>
   <span class="val" id="hlengthVal"></span>
 
   <label>Numeral side</label>
@@ -123,7 +123,7 @@
   <span class="val"></span>
 
   <label>Numeral inset</label>
-  <input type="range" id="numdist" min="40" max="220" step="2" value="88" data-cfg>
+  <input type="range" id="numdist" min="40" max="600" step="2" value="88" data-cfg>
   <span class="val" id="numdistVal"></span>
 
   <label>Font</label>
@@ -491,8 +491,9 @@ const randomize = () => {
   // The inset that hits `target` from either side, clamped to the slider, scored
   // by how far off screen center the numeral actually ends up. Roll among the
   // sides that land on screen; if neither does, take the closest.
+  const insetLo = +$('numdist').min, insetHi = +$('numdist').max;
   const sides = ['in', 'out'].map(side => {
-    const inset = Math.max(40, Math.min(220, side === 'in' ? ringOff - target : target - ringOff));
+    const inset = Math.max(insetLo, Math.min(insetHi, side === 'in' ? ringOff - target : target - ringOff));
     return { side, inset, off: Math.abs(side === 'in' ? ringOff - inset : ringOff + inset) };
   });
   const onScreen = sides.filter(s => s.off <= 170);
