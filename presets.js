@@ -7,12 +7,15 @@
 // geometric; demo.html and the generator each map them to the same bundled font.
 // fontWeight is a multiple of 100 (100-900) so it maps exactly onto WFF's enum.
 //
+// Backgrounds are pure black everywhere but ink: OLED black is unlit, so the face
+// runs into the bezel instead of outlining the screen.
+//
 // classic    the tuned default
 // rotor      rotating camera, numerals glued to dial, chunky, geometric
-// ember      warm, dim, quiet; serif at weight 200
+// ember      a coal in the dark: dim rose scale, hot red-orange hand, serif 200
 // wide       pulled back, both hands, close to a normal watch
-// blueprint  sharp square ends, numerals outside, cyan on ink blue
-// lume       dive-watch green everything on near-black
+// vernier    caliper scale: steel numerals outside the ring, hairline cyan hand
+// lume       dive-watch green everything on black
 // ink        inverted: black ink on warm paper, the only light face
 // brutal     poster-sized black-and-white slabs, sharp cuts, red hand
 globalThis.WATCH_PRESETS = {
@@ -30,7 +33,7 @@ globalThis.WATCH_PRESETS = {
     "fontWeight": 800, "fontScale": 1, "fontFamily": "geometric",
     "zoom": 700, "thickness": 6, "handLength": 1.05, "numeralsUpright": false,
     "focus": 0.7, "minuteHand": false, "complication": false, "complicationAngle": 180,
-    "handColor": "#ffd23f", "dialColor": "#e8e8e8", "background": "#101418"
+    "handColor": "#ffd23f", "dialColor": "#9aa0a6", "background": "#000000"
   },
   "ember": {
     "mode": "upright", "notches": "10-30", "notchWeight": 0.6, "notchLength": 0.5,
@@ -38,7 +41,7 @@ globalThis.WATCH_PRESETS = {
     "fontWeight": 200, "fontScale": 1.2, "fontFamily": "serif",
     "zoom": 800, "thickness": 2, "handLength": 1, "numeralsUpright": true,
     "focus": 0.85, "minuteHand": false, "complication": false, "complicationAngle": 180,
-    "handColor": "#ff4d2e", "dialColor": "#d8a08c", "background": "#180a07"
+    "handColor": "#ff4d2e", "dialColor": "#a86450", "background": "#000000"
   },
   "wide": {
     "mode": "upright", "notches": "5", "notchWeight": 1, "notchLength": 1,
@@ -48,13 +51,13 @@ globalThis.WATCH_PRESETS = {
     "focus": 0.55, "minuteHand": true, "complication": false, "complicationAngle": 180,
     "handColor": "#7fd0ff", "dialColor": "#e8e8e8", "background": "#000000"
   },
-  "blueprint": {
-    "mode": "upright", "notches": "5", "notchWeight": 1, "notchLength": 1.1,
-    "hourWeight": 1.1, "hourLength": 1, "numeralInset": 60, "numeralSide": "out", "sharp": true,
+  "vernier": {
+    "mode": "upright", "notches": "1-30", "notchWeight": 0.8, "notchLength": 0.9,
+    "hourWeight": 1.2, "hourLength": 1.1, "numeralInset": 60, "numeralSide": "out", "sharp": true,
     "fontWeight": 400, "fontScale": 1.1, "fontFamily": "condensed",
     "zoom": 900, "thickness": 1.5, "handLength": 1, "numeralsUpright": true,
     "focus": 0.88, "minuteHand": false, "complication": false, "complicationAngle": 180,
-    "handColor": "#62d0ff", "dialColor": "#a8c8e0", "background": "#0a1420"
+    "handColor": "#62d0ff", "dialColor": "#dfe6ec", "background": "#000000"
   },
   "lume": {
     "mode": "upright", "notches": "10-30", "notchWeight": 1.5, "notchLength": 1.1,
@@ -62,7 +65,7 @@ globalThis.WATCH_PRESETS = {
     "fontWeight": 700, "fontScale": 1, "fontFamily": "geometric",
     "zoom": 550, "thickness": 4, "handLength": 0.98, "numeralsUpright": true,
     "focus": 0.85, "minuteHand": false, "complication": false, "complicationAngle": 180,
-    "handColor": "#b8ffc8", "dialColor": "#b8ffc8", "background": "#050805"
+    "handColor": "#b8ffc8", "dialColor": "#b8ffc8", "background": "#000000"
   },
   "ink": {
     "mode": "upright", "notches": "5-30", "notchWeight": 1, "notchLength": 1,

@@ -60,19 +60,22 @@ Simulation-only: Time (scrub, 12h cycle), Speed (multiplier when not live; touch
 
 The numeral's offset from screen center is `zoom x (1 - focus) +/- numeralInset` (minus for inside, plus for outside).
 Keep the absolute value comfortably under 225 (the screen radius, less at horizontal extremes because the screen is round) or numerals clip.
-This is what previously bit the Vernier and Blueprint presets.
+This is what previously bit the Vernier preset.
 
 ## Presets
 
 Presets are config bundles only; picking one sets every control, after which any slider tweak diverges from it freely.
 No saving is implemented.
 
-- **Classic**: the tuned default. Orange hand, 10-min notches with 30-min emphasis, zoom 550, focus 0.81.
-- **Rotor**: rotating camera, numerals glued to the dial, chunky weights, geometric 800, thick yellow hand ending at the ring.
-- **Ember**: warm near-black background, red-orange hand, rose dial tint, serif at weight 200. The quiet one.
+Every preset but Ink is on pure black: OLED black is unlit, so the face runs into the bezel instead of outlining the screen.
+
+- **Classic**: the tuned default. Orange hand, 5-min notches with 30-min emphasis, zoom 870, focus 0.89.
+- **Rotor**: rotating camera, numerals glued to the dial, chunky weights, geometric 800, thick yellow hand ending at the ring, steel grey scale.
+- **Ember**: a coal in the dark. Red-orange hand, dim rose scale, serif at weight 200. The quiet one.
 - **Wide Angle**: zoom 300, focus 0.55, both hands, blue. Nearly a normal watch; useful as a comparison baseline.
-- **Blueprint**: sharp square ends, numerals outside the ring, condensed font, cyan on ink blue.
-- **Lume**: dive-watch green for hand and dial alike on near-black, chunky, geometric bold.
+- **Vernier**: a caliper scale. Every-minute notches, hairline cyan hand, steel-white numerals outside the ring, condensed 400, all square-cut.
+- **Lume**: dive-watch green for hand and dial alike, chunky, geometric bold.
+- **Ink**: the one light face — black ink on warm paper, serif, red hand.
 
 ## WFF portability notes
 
