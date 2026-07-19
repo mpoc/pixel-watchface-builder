@@ -27,6 +27,7 @@ const {
   PartText,
   PartImage,
   Rectangle,
+  RoundRectangle,
   Ellipse,
   Fill,
   Stroke,
@@ -44,7 +45,7 @@ const {
   ListOption,
 } = tagsFor(
   "WatchFace", "Metadata", "Scene", "Group", "Transform",
-  "PartDraw", "PartText", "PartImage", "Rectangle", "Ellipse", "Fill", "Stroke", "Image",
+  "PartDraw", "PartText", "PartImage", "Rectangle", "RoundRectangle", "Ellipse", "Fill", "Stroke", "Image",
   "Text", "Font", "Template", "Parameter",
   "ComplicationSlot", "DefaultProviderPolicy", "BoundingOval", "Complication",
   "UserConfigurations", "ListConfiguration", "ListOption",
@@ -112,6 +113,27 @@ const buildPreset = (name: string, p: any): XNode[] => {
   const NUM_R =
     R + (p.numeralSide === "out" ? p.numeralInset : -p.numeralInset);
 
+  // A filled bar at (0, 0) inside its PartDraw. `sharp: false` rounds the ends
+  // into a stadium, matching the demo's rx = w / 2 (SVG clamps each radius to
+  // half the corresponding side, so short bars round to a full oval).
+  const bar = (w: number, h: number, color: string) =>
+    p.sharp ? (
+      <Rectangle x={0} y={0} width={w} height={h}>
+        <Fill color={color} />
+      </Rectangle>
+    ) : (
+      <RoundRectangle
+        x={0}
+        y={0}
+        width={w}
+        height={h}
+        cornerRadiusX={w / 2}
+        cornerRadiusY={Math.min(w, h) / 2}
+      >
+        <Fill color={color} />
+      </RoundRectangle>
+    );
+
   // A radial tick: width w, length h, outer end on the dial ring at angle deg.
   // Placed at its final position and rotated about its own center — no wrapper
   // group, so the renderer never sees dial-sized static groups (previously one
@@ -131,9 +153,7 @@ const buildPreset = (name: string, p: any): XNode[] => {
         pivotY={0.5}
         alpha={alpha}
       >
-        <Rectangle x={0} y={0} width={ceil(w)} height={ceil(h)}>
-          <Fill color={DIAL_COLOR} />
-        </Rectangle>
+        {bar(ceil(w), ceil(h), DIAL_COLOR)}
       </PartDraw>
     );
   };
@@ -219,9 +239,7 @@ const buildPreset = (name: string, p: any): XNode[] => {
           width={hw}
           height={HAND_LEN + 8}
         >
-          <Rectangle x={0} y={0} width={hw} height={HAND_LEN + 8}>
-            <Fill color={color} />
-          </Rectangle>
+          {bar(hw, HAND_LEN + 8, color)}
         </PartDraw>
       </Group>
     );
