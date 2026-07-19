@@ -4,5 +4,8 @@
   "devDependencies": {
     "@types/bun": "latest",
     "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "fast-xml-builder": "^1.3.0"
   }
 }
