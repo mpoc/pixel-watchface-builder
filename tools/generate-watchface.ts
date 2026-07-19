@@ -26,12 +26,12 @@ const HOUR_DEG = "([HOUR_0_11] + [MINUTE_SECOND] / 60.0) * 30.0";
 const MINUTE_DEG = "[MINUTE_SECOND] * 6.0";
 
 // Emit one preset's full scene content (background + camera group) at the given indent.
-function emitPreset(
+const emitPreset = (
   name: string,
   p: any,
   emit: (s: string) => void,
   pad: string,
-) {
+) => {
   const ROTATE = p.mode === "rotate";
   const R = p.zoom;
   const DIST = p.focus * R;
@@ -166,7 +166,7 @@ function emitPreset(
   if (p.minuteHand) hand("minhand", p.thickness, MINUTE_DEG, wff("#8892a0"));
 
   emit(`${pad}</Group>`);
-}
+};
 
 // Screen-fixed round date complication at bottom center, styled to the preset.
 // The user can repoint it (battery, steps, weather...) in the on-watch editor.
@@ -174,13 +174,13 @@ function emitPreset(
 // screen). complicationAngle places it at a fixed safe radius from screen
 // center: 0 = top, 90 = right, 180 = bottom.
 const COMP = { d: 100, r: 131 };
-function emitComplicationSlot(
+const emitComplicationSlot = (
   name: string,
   p: any,
   emit: (s: string) => void,
   pad: string,
   slotId: number,
-) {
+) => {
   const DIAL_COLOR = wff(p.dialColor);
   const OUTLINE = "#59" + p.dialColor.slice(1).toUpperCase(); // dial color at ~35%
   const size = Math.round(20 * p.fontScale);
@@ -231,7 +231,7 @@ function emitComplicationSlot(
   line(52, size + 12, size, "[COMPLICATION.TEXT]");
   emit(`${pad}    </Complication>`);
   emit(`${pad}</ComplicationSlot>`);
-}
+};
 
 const arg = Bun.argv[2] ?? "classic";
 const all = arg === "--all";
