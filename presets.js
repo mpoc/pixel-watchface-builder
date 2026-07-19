@@ -1,5 +1,5 @@
 // Single source of truth for all watch face presets.
-// Loaded by demo.html via <script src> and parsed by tools/generate-watchface.ts,
+// Loaded by demo.html via <script src> and parsed by tools/generate-watchface.tsx,
 // so the object literal must stay pure JSON (double quotes, no comments inside,
 // no trailing commas). Presets are fully expanded — no base/inheritance.
 //

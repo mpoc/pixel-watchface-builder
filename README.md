@@ -19,7 +19,7 @@ Zoomed hour-hand watch face for Pixel Watch 2 (Watch Face Format XML, no code).
 ```sh
 open demo.html                        # tune the design in the browser
 # edit presets.js (shared by demo + generator)
-bun tools/generate-watchface.ts classic   # one preset, or --all for an on-watch style picker
+bun tools/generate-watchface.tsx classic  # one preset, or --all for an on-watch style picker
 ./gradlew assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
@@ -40,4 +40,5 @@ adb -s <ip>:<port> install -r ...     # if "more than one device"
 
 - `presets.js` — all design presets, single source of truth
 - `demo.html` — browser simulator (`demo.md` explains the concept)
-- `tools/generate-watchface.ts` — preset → `app/src/main/res/raw/watchface.xml`
+- `tools/generate-watchface.tsx` — preset → `app/src/main/res/raw/watchface.xml`
+- `tools/xjsx/` — 50-line JSX runtime that renders the tags above straight to XML (not React)
