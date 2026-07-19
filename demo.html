@@ -29,6 +29,7 @@
   #config { flex: 1; background: #0e0f12; color: #9fd49f; border: 1px solid #333; border-radius: 6px; font: 12px ui-monospace, monospace; padding: 8px; resize: none; }
   button { background: #2a2d33; color: #ddd; border: 1px solid #444; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
   button:hover { background: #3a3e46; }
+  #rand { width: 100%; padding: 4px 0; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -51,8 +52,9 @@
     <option value="ink">Ink</option>
     <option value="brutal">Brutal</option>
     <option value="horizon">Horizon</option>
+    <option value="drift">Drift</option>
   </select>
-  <span class="val"></span>
+  <span class="val"><button id="rand" title="Roll a completely random face">🎲 Random</button></span>
 
   <label>Camera</label>
   <select id="mode" data-cfg>
@@ -91,7 +93,7 @@
   <span class="val" id="thickVal"></span>
 
   <label>Hand length (× radius)</label>
-  <input type="range" id="handlen" min="0.3" max="4" step="0.01" value="4" data-cfg>
+  <input type="range" id="handlen" min="0" max="4" step="0.01" value="4" data-cfg>
   <span class="val" id="handlenVal"></span>
 
   <label>Notch weight</label>
@@ -307,7 +309,7 @@ const build = c => {
   const hourHand = hand(len, c.thickness, c.handColor);
   const minHand  = hand(len, c.thickness / 2, '#8892a0');
 
-  el('circle', { cx: C, cy: C, r: 8, fill: c.dialColor }, cam);
+  if (c.handLength > 0) el('circle', { cx: C, cy: C, r: 8, fill: c.dialColor }, cam);
 
   // Screen-fixed round date bubble at bottom center (a complication slot on the watch).
   if (c.complication) {
@@ -355,9 +357,13 @@ const render = () => {
   // 30 deg = a whole hour ahead, so the hand trails off the near edge of the view.
   const camDeg = hourDeg + (c.cameraLead || 0);
 
+  // handLength 0 means no hands at all: the dial itself is the readout, with the
+  // time under the center of the screen. The generator emits nothing for them.
+  const noHands = c.handLength === 0;
   const rot = (g, deg) => g.setAttribute('transform', `rotate(${deg} ${C} ${C})`);
+  parts.hourHand.style.display = noHands ? 'none' : '';
   rot(parts.hourHand, hourDeg);
-  parts.minHand.style.display = c.minuteHand ? '' : 'none';
+  parts.minHand.style.display = c.minuteHand && !noHands ? '' : 'none';
   rot(parts.minHand, minDeg);
 
   // Upright: counter-rotate numerals against their tick (and against the camera in
@@ -448,6 +454,79 @@ const applyPreset = p => {
   updateLabels();
 };
 $('preset').addEventListener('input', () => applyPreset(PRESETS[$('preset').value]));
+
+// --- Random face ------------------------------------------------------------
+// Everything is rolled freely except the framing: zoom, focus and numeralInset
+// are drawn together so the numeral offset (zoom x (1 - focus) -/+ inset) lands
+// inside the screen. Rolling those three independently just yields empty faces.
+const rnd = (a, b) => a + Math.random() * (b - a);
+const rndStep = (a, b, s) => +(Math.round(rnd(a, b) / s) * s).toFixed(4);
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const chance = p => Math.random() < p;
+const opts = id => [...$(id).options].map(o => o.value);
+
+// h 0-360, s/l percentages -> #rrggbb.
+const hsl = (h, s, l) => {
+  s /= 100; l /= 100;
+  const k = n => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const ch = n => Math.round(255 * (l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1))));
+  return '#' + [ch(0), ch(8), ch(4)].map(v => v.toString(16).padStart(2, '0')).join('');
+};
+
+const randomize = () => {
+  // Palette: usually a dark face, occasionally an inverted paper one.
+  const light = chance(0.15);
+  const bgHue = rnd(0, 360), dialHue = chance(0.5) ? bgHue : rnd(0, 360);
+  $('bgcolor').value = hsl(bgHue, light ? rnd(5, 30) : rnd(0, 25), light ? rnd(86, 95) : rnd(2, 9));
+  $('dialcolor').value = hsl(dialHue, chance(0.3) ? rnd(30, 70) : rnd(0, 18), light ? rnd(8, 22) : rnd(68, 96));
+  $('handcolor').value = hsl(rnd(0, 360), rnd(55, 100), light ? rnd(35, 55) : rnd(48, 70));
+
+  // Framing: pick the zoom, then the focus that puts the ring `off` px from
+  // screen center, then an inset that lands the numerals somewhere on screen.
+  const zoom = rndStep(260, 2600, 10);
+  const off = rnd(60, 260);
+  const focus = Math.max(0, Math.min(1.5, +(1 - off / zoom).toFixed(2)));
+  const ringOff = zoom * (1 - focus); // after rounding focus
+  const target = rnd(-160, 160);      // where the numeral should sit
+  // The inset that hits `target` from either side, clamped to the slider, scored
+  // by how far off screen center the numeral actually ends up. Roll among the
+  // sides that land on screen; if neither does, take the closest.
+  const sides = ['in', 'out'].map(side => {
+    const inset = Math.max(40, Math.min(220, side === 'in' ? ringOff - target : target - ringOff));
+    return { side, inset, off: Math.abs(side === 'in' ? ringOff - inset : ringOff + inset) };
+  });
+  const onScreen = sides.filter(s => s.off <= 170);
+  const framing = onScreen.length ? pick(onScreen) : sides.reduce((a, b) => (a.off <= b.off ? a : b));
+
+  $('zoom').value = zoom;
+  $('focus').value = focus;
+  $('numside').value = framing.side;
+  $('numdist').value = Math.round(framing.inset / 2) * 2;
+
+  $('mode').value = pick(opts('mode'));
+  $('notches').value = pick(opts('notches'));
+  $('ffamily').value = pick(opts('ffamily'));
+  $('nweight').value = rndStep(0.5, 2, 0.05);
+  $('nlength').value = rndStep(0.4, 2.5, 0.05);
+  $('hweight').value = rndStep(0.5, 2, 0.05);
+  $('hlength').value = rndStep(0.4, 2.5, 0.05);
+  $('fweight').value = rndStep(100, 900, 100);
+  $('fscale').value = rndStep(0.7, 1.8, 0.05);
+  $('thick').value = rndStep(1, 12, 0.5);
+  // Handless, a hand that stops near the ring, or the unending kind.
+  $('handlen').value = chance(0.1) ? 0 : chance(0.35) ? 4 : rndStep(0.6, 1.3, 0.01);
+  $('lead').value = chance(0.45) ? 0 : rndStep(-30, 30, 0.5);
+  $('sharp').checked = chance(0.35);
+  $('upnum').checked = chance(0.8);
+  $('minhand').checked = chance(0.2);
+  $('comp').checked = chance(0.35);
+  $('compangle').value = rndStep(0, 345, 15);
+
+  rebuild();
+  updateLabels();
+};
+$('rand').addEventListener('click', randomize);
 
 for (const input of document.querySelectorAll('[data-cfg]')) {
   input.addEventListener('input', () => { rebuild(); updateLabels(); });

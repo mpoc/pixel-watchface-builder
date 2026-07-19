@@ -354,8 +354,12 @@ const buildPreset = (name: string, p: any): XNode[] => {
       )}
       {scale}
       {numerals}
-      {hand("hand", p.thickness * 2, HOUR_DEG, HAND_COLOR)}
-      {p.minuteHand && hand("minhand", p.thickness, MINUTE_DEG, wff("#8892a0"))}
+      {/* handLength 0 = a handless face: the dial is the readout, read against
+          the center of the screen, so no hand groups are emitted at all. */}
+      {HAND_LEN > 0 && hand("hand", p.thickness * 2, HOUR_DEG, HAND_COLOR)}
+      {HAND_LEN > 0 &&
+        p.minuteHand &&
+        hand("minhand", p.thickness, MINUTE_DEG, wff("#8892a0"))}
     </Group>,
   ];
 };

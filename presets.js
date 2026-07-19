@@ -19,6 +19,7 @@
 // ink        inverted: black ink on warm paper, the only light face
 // brutal     poster-sized black-and-white slabs, sharp cuts, red hand
 // horizon    camera leads the hand by 24 minutes: now trails the edge, ahead is centered
+// drift      handless: the dial rotates under a fixed viewpoint, time reads at screen center
 globalThis.WATCH_PRESETS = {
   "classic": {
     "mode": "upright", "notches": "5-30", "notchWeight": 1.5, "notchLength": 1.2,
@@ -91,5 +92,13 @@ globalThis.WATCH_PRESETS = {
     "zoom": 800, "thickness": 3, "handLength": 4, "numeralsUpright": true,
     "focus": 0.88, "cameraLead": 10, "minuteHand": false, "complication": false, "complicationAngle": 180,
     "handColor": "#5ad1a0", "dialColor": "#dce3e8", "background": "#000000"
+  },
+  "drift": {
+    "mode": "rotate", "notches": "5-30", "notchWeight": 1.4, "notchLength": 1.4,
+    "hourWeight": 0.75, "hourLength": 1.6, "numeralInset": 40, "numeralSide": "out", "sharp": true,
+    "fontWeight": 900, "fontScale": 0.85, "fontFamily": "mono",
+    "zoom": 640, "thickness": 6, "handLength": 0, "numeralsUpright": false,
+    "focus": 0.94, "cameraLead": 0, "minuteHand": false, "complication": false, "complicationAngle": 150,
+    "handColor": "#ed557f", "dialColor": "#85beff", "background": "#000000"
   }
 };
