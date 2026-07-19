@@ -44,11 +44,31 @@ const {
   ListConfiguration,
   ListOption,
 } = tagsFor(
-  "WatchFace", "Metadata", "Scene", "Group", "Transform",
-  "PartDraw", "PartText", "PartImage", "Rectangle", "RoundRectangle", "Ellipse", "Fill", "Stroke", "Image",
-  "Text", "Font", "Template", "Parameter",
-  "ComplicationSlot", "DefaultProviderPolicy", "BoundingOval", "Complication",
-  "UserConfigurations", "ListConfiguration", "ListOption",
+  "WatchFace",
+  "Metadata",
+  "Scene",
+  "Group",
+  "Transform",
+  "PartDraw",
+  "PartText",
+  "PartImage",
+  "Rectangle",
+  "RoundRectangle",
+  "Ellipse",
+  "Fill",
+  "Stroke",
+  "Image",
+  "Text",
+  "Font",
+  "Template",
+  "Parameter",
+  "ComplicationSlot",
+  "DefaultProviderPolicy",
+  "BoundingOval",
+  "Complication",
+  "UserConfigurations",
+  "ListConfiguration",
+  "ListOption",
 );
 
 const presetsSrc = await Bun.file("presets.js").text();
@@ -85,7 +105,9 @@ const fontFile = (p: any) => {
   const w = Math.min(900, Math.max(100, Math.round(p.fontWeight / 100) * 100));
   const name = `${stem}_${w}`;
   if (!FONT_FILES.has(name)) {
-    throw new Error(`missing res/font/${name}.ttf — run: python3 tools/build-fonts.py`);
+    throw new Error(
+      `missing res/font/${name}.ttf — run: python3 tools/build-fonts.py`,
+    );
   }
   return name;
 };
@@ -158,10 +180,29 @@ const buildPreset = (name: string, p: any): XNode[] => {
     );
   };
 
-  // Hour markers (base 6px wide, 44px long).
-  const hours = range(12).map((h) =>
-    tick(h * 30, p.hourWeight * 6, p.hourLength * 44, 255),
-  );
+  // Off-screen culling. The scale repeats every 30 deg, so the dial can be drawn
+  // as one hour's worth of ticks rotated by whole hours ([HOUR_0_11] * 30) —
+  // segment k is pixel-identical to segment k+h. Inside that rotating frame the
+  // camera only ever sits between 0 and 30 deg (the hand's progress through the
+  // current hour), so most ticks can never be on screen and are not emitted.
+  //
+  // canBeVisible answers, for a tick at relative angle `deg`, whether it is on
+  // screen for ANY position of the camera within that 30 deg span. The camera
+  // centers DIST from the dial center; the tick's center sits at radius R - h/2,
+  // delta off the camera; law of cosines gives their distance. A tick is kept
+  // while that distance is within the screen radius plus the tick's own corner
+  // reach, so nothing is culled while any part of it still overlaps the window.
+  const SCREEN_R = SCREEN / 2;
+  const canBeVisible = (deg: number, w: number, h: number) => {
+    // deg - 30 < delta <= deg as the camera sweeps the hour; take the closest.
+    const rel = ((((deg + 180) % 360) + 360) % 360) - 180;
+    const delta = rel > 30 ? rel - 30 : rel < 0 ? -rel : 0;
+    const rc = R - h / 2;
+    const dist = Math.sqrt(
+      rc * rc + DIST * DIST - 2 * rc * DIST * Math.cos((delta * Math.PI) / 180),
+    );
+    return dist <= SCREEN_R + Math.hypot(w, h) / 2;
+  };
 
   // Minute notches, e.g. "10-30" = every 10 minutes with the 30 emphasized.
   const [stepStr, emphasis] = String(p.notches).split("-");
@@ -169,19 +210,49 @@ const buildPreset = (name: string, p: any): XNode[] => {
   const halfEmph = emphasis === "30";
   const mins: number[] = [];
   if (step > 0) for (let m = step; m < 60; m += step) mins.push(m);
-  const notches = range(12).flatMap((h) =>
-    mins.map((m) => {
-      const five = m % 5 === 0,
-        fifteen = m % 15 === 0,
-        half = halfEmph && m === 30;
-      return tick(
-        h * 30 + m * 0.5,
-        p.notchWeight * (half ? 3.5 : fifteen ? 2.5 : 1.5),
-        p.notchLength * (half ? 38 : fifteen ? 30 : five ? 22 : 12),
-        Math.round(255 * (half ? 0.9 : fifteen ? 0.7 : five ? 0.5 : 0.27)),
-      );
-    }),
-  );
+
+  // Every tick of the dial as (angle, width, length, alpha), one full turn of
+  // hour markers (base 6px wide, 44px long) and notches, expressed relative to
+  // the current hour so the whole set can be culled and then rotated.
+  const dialTicks = range(12).flatMap((i) => {
+    const k = i - 6; // -6..5: relative segments, nearest first in both directions
+    const five = (m: number) => m % 5 === 0;
+    return [
+      [k * 30, p.hourWeight * 6, p.hourLength * 44, 255] as const,
+      ...mins.map((m) => {
+        const fifteen = m % 15 === 0,
+          half = halfEmph && m === 30;
+        return [
+          k * 30 + m * 0.5,
+          p.notchWeight * (half ? 3.5 : fifteen ? 2.5 : 1.5),
+          p.notchLength * (half ? 38 : fifteen ? 30 : five(m) ? 22 : 12),
+          Math.round(255 * (half ? 0.9 : fifteen ? 0.7 : five(m) ? 0.5 : 0.27)),
+        ] as const;
+      }),
+    ];
+  });
+
+  const visible = dialTicks.filter(([deg, w, h]) => canBeVisible(deg, w, h));
+  const dial = visible.map(([deg, w, h, a]) => tick(deg, w, h, a));
+  // Nothing culled means the rotation is a no-op — emit the ticks bare, so a
+  // pulled-back preset that shows the whole dial pays for no extra group.
+  const scale =
+    visible.length === dialTicks.length ? (
+      dial
+    ) : (
+      <Group
+        name={`dial_${name}`}
+        x={0}
+        y={0}
+        width={BOX}
+        height={BOX}
+        pivotX={0.5}
+        pivotY={0.5}
+      >
+        <Transform target="angle" value="[HOUR_0_11] * 30.0" />
+        {dial}
+      </Group>
+    );
 
   // Numerals at fixed positions on the ring. Self-rotation about each numeral's
   // center: glued = static ring orientation; upright in rotate mode = spin with
@@ -206,11 +277,7 @@ const buildPreset = (name: string, p: any): XNode[] => {
       >
         {!glued && ROTATE && <Transform target="angle" value={HOUR_DEG} />}
         <Text align="CENTER" ellipsis="false">
-          <Font
-            family={fontFile(p)}
-            size={FONT_SIZE}
-            color={DIAL_COLOR}
-          >
+          <Font family={fontFile(p)} size={FONT_SIZE} color={DIAL_COLOR}>
             {h === 0 ? 12 : h}
           </Font>
         </Text>
@@ -278,8 +345,7 @@ const buildPreset = (name: string, p: any): XNode[] => {
           />
         </>
       )}
-      {hours}
-      {notches}
+      {scale}
       {numerals}
       {hand("hand", p.thickness * 2, HOUR_DEG, HAND_COLOR)}
       {p.minuteHand && hand("minhand", p.thickness, MINUTE_DEG, wff("#8892a0"))}
@@ -306,11 +372,7 @@ const buildComplicationSlot = (name: string, p: any, slotId: number): XNode => {
   const line = (y: number, h: number, fontSize: number, expr: string) => (
     <PartText x={6} y={y} width={d - 12} height={h}>
       <Text align="CENTER" ellipsis="TRUE">
-        <Font
-          family={fontFile(p)}
-          size={fontSize}
-          color={DIAL_COLOR}
-        >
+        <Font family={fontFile(p)} size={fontSize} color={DIAL_COLOR}>
           <Template>
             %s
             <Parameter expression={expr} />

@@ -81,7 +81,7 @@ Every preset but Ink is on pure black: OLED black is unlit, so the face runs int
 
 The sim deliberately only uses primitives that map to Watch Face Format:
 
-- Static dial artwork (ticks, numerals) pre-rotated around a fixed center. Numerals are real WFF text, drawn with a bundled font cut to the preset's exact weight, so `fontFamily`/`fontWeight` carry over from the demo.
+- Static dial artwork (ticks, numerals) pre-rotated around a fixed center. The generator emits only the ticks that can be on screen: the scale repeats every 30 deg, so it draws one hour's worth rotated by `[HOUR_0_11] * 30` instead of all twelve. The demo has no such culling and renders the whole dial — it is the reference for what the watch should look like. Numerals are real WFF text, drawn with a bundled font cut to the preset's exact weight, so `fontFamily`/`fontWeight` carry over from the demo.
 - Time-driven rotation of the hand and (in rotate mode) the dial group. Directly expressible.
 - The upright camera's translation is `focus x zoom x sin/cos(hourAngle)`. WFF transform expressions support trig, so this should be expressible in XML, but it is the least-verified piece.
 - Upright numerals in rotate mode need one time-driven counter-rotation per numeral (12 extra animated transforms). Verbose but expressible.
