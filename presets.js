@@ -69,7 +69,7 @@ globalThis.WATCH_PRESETS = {
     "handColor": "#b3261e", "dialColor": "#1c1a17", "background": "#f0e7d3"
   },
   "brutal": {
-    "mode": "upright", "notches": "5", "notchWeight": 3, "notchLength": 1.5,
+    "mode": "upright", "notches": "10-30", "notchWeight": 3, "notchLength": 1.5,
     "hourWeight": 2.5, "hourLength": 1.2, "numeralInset": 95, "numeralSide": "in", "sharp": true,
     "fontWeight": 800, "fontScale": 1.3, "fontFamily": "system-ui",
     "zoom": 480, "thickness": 8, "handLength": 1, "numeralsUpright": true,
