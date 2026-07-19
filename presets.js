@@ -85,11 +85,11 @@ globalThis.WATCH_PRESETS = {
     "handColor": "#5ad1a0", "dialColor": "#dce3e8", "background": "#000000"
   },
   "drift": {
-    "mode": "rotate", "notches": "5-30", "notchWeight": 1.4, "notchLength": 1.4,
-    "hourWeight": 0.75, "hourLength": 1.6, "numeralInset": 40, "numeralSide": "out", "sharp": true,
-    "fontWeight": 900, "fontScale": 0.85, "fontFamily": "mono",
+    "mode": "rotate", "notches": "5-30", "notchWeight": 1.65, "notchLength": 1.4,
+    "hourWeight": 1.3, "hourLength": 1.6, "numeralInset": 50, "numeralSide": "out", "sharp": true,
+    "fontWeight": 900, "fontScale": 1.4, "fontFamily": "mono",
     "zoom": 640, "thickness": 6, "handLength": 0, "numeralsUpright": false,
-    "focus": 0.94, "cameraLead": 0, "minuteHand": false, "complication": false, "complicationAngle": 150,
+    "focus": 0.96, "cameraLead": 0, "minuteHand": false, "complication": false, "complicationAngle": 150,
     "handColor": "#ed557f", "dialColor": "#85beff", "background": "#000000"
   }
 };
